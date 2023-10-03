@@ -1,10 +1,10 @@
 import docker
 import dockerpty
 import os
+from names_generator import generate_name
 
 
 def check_unique_name(client, tangent_id, name):
-    # Check if the specified name is unique among containers with the same tangent_id
     existing_containers = client.containers.list(
         all=True, filters={"label": f"tangent_id={tangent_id}"}
     )
@@ -19,7 +19,7 @@ def create_container(
     name=None,
     shell="/bin/bash",
     config=None,
-    create_volume=False  # Add a new parameter for the --volume flag
+    create_volume=False,
 ):
     try:
         client = docker.from_env()
@@ -30,43 +30,33 @@ def create_container(
             if not check_unique_name(client, tangent_id, name):
                 print(f"Error: Container name '{name}' is not unique.")
                 return None
+        else:
+            name = generate_name()
 
-        # Create the default volumes
         volumes = {"/sys/fs/cgroup": {"bind": "/sys/fs/cgroup", "mode": "rw"}}
 
-        volume_path = None  # Initialize the volume path variable
+        volume_path = None
 
-        # Check if the --volume flag is passed
         if create_volume:
-            # Create the volume host path directory
-            volume_host_path = os.path.expanduser(config.get('volume_host_path'))
+            volume_host_path = os.path.expanduser(config.get("volume_host_path"))
             os.makedirs(volume_host_path, exist_ok=True)
-
-            # Create a unique volume name
-            volume_name = f"volume_{name or tangent_id}"
-
-            # Define the path to the volume directory under volume_host_path
+            volume_name = f"volume_{name}"
             volume_path = os.path.join(volume_host_path, volume_name)
-
-            # Create the Docker volume
             client.volumes.create(name=volume_name)
-
-            # Mount the volume to the specified container path
-            volumes[volume_path] = {'bind': config.get('volume_container_path'), 'mode': 'rw'}
+            volumes[volume_path] = {
+                "bind": config.get("volume_container_path"),
+                "mode": "rw",
+            }
 
         container = client.containers.create(
             container_image,
+            name=name,
             detach=True,
             privileged=True,
-            volumes=volumes,  # Use the volumes based on the --volume flag
+            volumes=volumes,
             cgroupns="host",
             labels={"tangent_id": tangent_id},
         )
-
-        if name:
-            container.rename(name)
-        else:
-            name = container.name
 
         container.start()
         if connect:

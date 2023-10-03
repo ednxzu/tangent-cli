@@ -1,6 +1,7 @@
 from . import utils
 from .functions.create import create_container, connect_container
 from .functions.list import list_containers_by_uuid
+from .functions.destroy import destroy_environment
 from .parser import create_parser
 from tabulate import tabulate
 
@@ -34,6 +35,11 @@ def main(args):
     elif args.action == "connect":
         if args.name:
             connect_container(container_name=args.name, tangent_id=tangent_id)
+        else:
+            print("Error: Specify the name of the environment to connect to using the '--name' flag.")
+    elif args.action == "destroy":
+        if args.name:
+            destroy_environment(name=args.name, keep_storage=args.keep_storage, config=config)
         else:
             print("Error: Specify the name of the environment to connect to using the '--name' flag.")
 

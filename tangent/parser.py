@@ -25,6 +25,8 @@ def create_parser():
     create_parser.add_argument(
         "--shell",
         "-s",
+        default="/bin/bash",
+        type=str,
         required=False,
         help="Specify a custom shell to execute inside the container. Defaults to /bin/bash",
     )
@@ -46,7 +48,13 @@ def create_parser():
     # Create subparser for the 'destroy' subcommand
     destroy_parser = subparsers.add_parser("destroy", help="Destroy a test environment")
     destroy_parser.add_argument("name", help="Name of the environment to destroy")
-    # destroy_parser.add_argument("--wipe", "-w", help="Remove the ephemeral storage ")
+    destroy_parser.add_argument(
+        "--keep-storage",
+        "-k",
+        required=False,
+        help="Do not wiped the ephemeral volume when deleting the environment",
+        action='store_true'
+    )
 
     # Create subparser for the 'list' subcommand
     list_parser = subparsers.add_parser("list", help="List test environments")
