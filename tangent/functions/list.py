@@ -3,20 +3,18 @@ from tabulate import tabulate
 from termcolor import colored
 
 
-def list_tangent(tangent_id, running=False, stopped=False):
+def list_tangent(client, config=None, name=None, running=False, stopped=False):
     try:
-        client = docker.from_env()
+        tangent_id = config.get("tangent_id")
         filters = {"label": f"tangent_id={tangent_id}"}
         containers = client.containers.list(all=True, filters=filters)
-
-        if running and stopped:
-            print("Error: You cannot use both --running and --stopped flags simultaneously.")
-            return
 
         if running:
             containers = [container for container in containers if container.status == "running"]
         elif stopped:
             containers = [container for container in containers if container.status != "running"]
+        elif name:
+            containers = [container for container in containers if container.name == name]
 
         if not containers:
             print("No environments managed by tangent.")

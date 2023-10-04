@@ -2,6 +2,7 @@ import docker
 import dockerpty
 import os
 from names_generator import generate_name
+from .list import list_tangent
 
 
 def tangent_name_is_unique(client, tangent_id, name):
@@ -14,7 +15,7 @@ def tangent_name_is_unique(client, tangent_id, name):
 
 def create_tangent(
     distribution,
-    tangent_id,
+    client,
     connect=False,
     name=None,
     shell="/bin/bash",
@@ -22,12 +23,11 @@ def create_tangent(
     create_volume=False,
 ):
     try:
-        client = docker.from_env()
         container_image_name = f"geerlingguy/docker-{distribution}-ansible"
         container_image = client.images.pull(container_image_name)
 
         if name:
-            if not tangent_name_is_unique(client, tangent_id, name):
+            if not tangent_name_is_unique(client, config.get("tangent_id"), name):
                 print(f"Error: Container name '{name}' is not unique.")
                 return None
         else:
@@ -55,37 +55,51 @@ def create_tangent(
             privileged=True,
             volumes=volumes,
             cgroupns="host",
-            labels={"tangent_id": tangent_id},
+            labels={"tangent_id": config.get("tangent_id")},
         )
 
-        container.start()
-        if connect:
-            connect_tangent(container_name=name, tangent_id=tangent_id, shell=shell)
+        start_tangent(name=name, config=config, client=client, connect=connect, shell=shell)
 
-        return container, volume_path  # Return the container and volume path
+        return container, volume_path
     except docker.errors.APIError as e:
         print(f"Error: Failed to create the test environment - {e}")
         return None, None
 
 
-def connect_tangent(container_name, tangent_id, shell="/bin/bash"):
+def start_tangent(name, config, client, connect=False, shell="/bin/bash"):
     try:
-        client = docker.from_env()
-        container = client.containers.get(container_name)
+        container = client.containers.get(name)
 
-        # Check if the container has the correct 'tangent_id' label
         if (
             "tangent_id" in container.labels
-            and container.labels["tangent_id"] == tangent_id
+            and container.labels["tangent_id"] == config.get("tangent_id")
         ):
-            # Check if the container is running
+            if container.status != "running":
+                container.start()
+                list_tangent(client=client, config=config, name=name)
+                if connect:
+                    connect_tangent(name=name, config=config, client=client, shell=shell)
+            else:
+                print(f"Error: Container '{name}' is already running.")
+    except docker.errors.APIError as e:
+        print(f"Error: Failed to start to the container - {e}")
+
+
+def connect_tangent(name, config, client, shell="/bin/bash"):
+    try:
+        container = client.containers.get(name)
+
+        if (
+            "tangent_id" in container.labels
+            and container.labels["tangent_id"] == config.get("tangent_id")
+        ):
             if container.status == "running":
                 dockerpty.exec_command(client.api, container.id, shell)
             else:
-                print(f"Error: Container '{container_name}' is not running.")
+                print(f"Error: Container '{name}' is not running.")
         else:
             print(
-                f"Error: Container '{container_name}' either does not have the 'tangent_id' label or the label value does not match the specified 'tangent_id'."
+                f"Error: Container '{name}' either does not have the 'tangent_id' label or the label value does not match the specified 'tangent_id'."
             )
     except docker.errors.APIError as e:
         print(f"Error: Failed to connect to the container - {e}")

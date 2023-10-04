@@ -1,46 +1,62 @@
 from . import utils
-from .functions.create import create_tangent, connect_tangent
+from .functions.create import create_tangent, start_tangent, connect_tangent
 from .functions.list import list_tangent
-from .functions.destroy import destroy_tangent
+from .functions.destroy import destroy_tangent, stop_tangent
 from .parser import create_parser
-from tabulate import tabulate
+import docker
 
 
 def main(args):
     config = utils.load_config()
-    tangent_id = config.get('tangent_id')
+    client = docker.from_env()
+
     if args.action == "create":
-        print(args.connect)
-        test_env_id = create_tangent(
+        create_tangent(
             distribution=args.distribution,
-            tangent_id=tangent_id,
+            client=client,
             connect=args.connect,
             name=args.name,
             shell=args.shell,
             config=config,
             create_volume=args.volume
         )
-        if test_env_id:
-            print(f"Test environment created with ID: {test_env_id}")
-        else:
-            return 1
     elif args.action == "list":
         list_tangent(
-            tangent_id=tangent_id,
+            client=client,
+            config=config,
+            name=args.name,
             running=args.running,
             stopped=args.stopped
         )
     elif args.action == "connect":
         connect_tangent(
-            container_name=args.name,
-            tangent_id=tangent_id
+            name=args.name,
+            config=config,
+            client=client,
+            shell=args.shell
         )
     elif args.action == "destroy":
         destroy_tangent(
             name=args.name,
+            client=client,
             keep_storage=args.keep_storage,
             config=config
         )
+    elif args.action == "stop":
+        stop_tangent(
+            name=args.name,
+            client=client,
+            config=config
+        )
+    elif args.action == "start":
+        start_tangent(
+            name=args.name,
+            config=config,
+            client=client,
+            connect=args.connect,
+            shell=args.shell
+        )
+
 
 if __name__ == "__main__":
     parser = create_parser()

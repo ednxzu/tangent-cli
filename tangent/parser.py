@@ -59,17 +59,21 @@ def create_parser():
 
     # Create subparser for the 'list' subcommand
     list_parser = subparsers.add_parser("list", help="List test environments")
-    list_parser.add_argument(
+    group = list_parser.add_mutually_exclusive_group(required=False)
+    group.add_argument(
+        "--name",
+        "-n",
+        help="Name of the environment to stop"
+    )
+    group.add_argument(
         "--running",
         "-r",
-        required=False,
         help="List only the running environments, ignore the stopped ones.",
         action='store_true'
     )
-    list_parser.add_argument(
+    group.add_argument(
         "--stopped",
         "-s",
-        required=False,
         help="List only the stopped environments, ignore the running ones.",
         action='store_true'
     )
@@ -82,39 +86,36 @@ def create_parser():
     connect_parser.add_argument(
         "--shell",
         "-s",
+        default="/bin/bash",
+        type=str,
         required=False,
         help="Specify a custom shell to execute inside the container. Defaults to /bin/bash",
     )
 
+    # Create subparser for the 'stop' subcommand
+    stop_parser = subparsers.add_parser(
+        "stop", help="Stop a test environment"
+    )
+    stop_parser.add_argument("name", help="Name of the environment to stop")
+
+    # Create subparser for the 'start' subcommand
+    start_parser = subparsers.add_parser(
+        "start", help="Stop a test environment"
+    )
+    start_parser.add_argument("name", help="Name of the environment to stop")
+    start_parser.add_argument(
+        "--connect",
+        "-c",
+        required=False,
+        action="store_true",
+        help="Connect to the environment after starting it",
+    )
+    start_parser.add_argument(
+        "--shell",
+        "-s",
+        default="/bin/bash",
+        type=str,
+        required=False,
+        help="Specify a custom shell to execute inside the container. Defaults to /bin/bash",
+    )
     return parser
-
-
-# def create_parser():
-#     parser = argparse.ArgumentParser(
-#         description="Run simple test environments in docker."
-#     )
-#     parser.add_argument(
-#         "action",
-#         choices=["create", "destroy", "connect", "list"],
-#         help="Action to perform: create, destroy, or list",
-#     )
-#     parser.add_argument(
-#         "--distribution",
-#         "-d",
-#         required="create" in sys.argv,
-#         help="Distribution name for the test environment",
-#     )
-#     parser.add_argument(
-#         "--name",
-#         "-n",
-#         required=False,
-#         help="Specify a custom name for the container. If not provided, a random name will be assigned by Docker.",
-#     )
-#     parser.add_argument(
-#         "--shell",
-#         "-s",
-#         required=False,
-#         help="Specify a custom shell to execute inside the container. Defaults to /bin/bash",
-#     )
-#     parser.add_argument("--connect", "-c", required="create" in sys.argv, action="store_true")
-#     return parser
