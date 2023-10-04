@@ -4,6 +4,7 @@ import sys
 
 def create_parser():
     parser = argparse.ArgumentParser(
+        prog="tangent",
         description="Run simple test environments in docker."
     )
     subparsers = parser.add_subparsers(title="subcommands", dest="action")

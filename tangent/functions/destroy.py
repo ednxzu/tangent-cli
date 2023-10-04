@@ -2,7 +2,7 @@ import docker
 import os
 import shutil
 
-def destroy_environment(name, keep_storage=False, config=None):
+def destroy_tangent(name, keep_storage=False, config=None):
     try:
         client = docker.from_env()
 

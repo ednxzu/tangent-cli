@@ -4,7 +4,7 @@ import os
 from names_generator import generate_name
 
 
-def check_unique_name(client, tangent_id, name):
+def tangent_name_is_unique(client, tangent_id, name):
     existing_containers = client.containers.list(
         all=True, filters={"label": f"tangent_id={tangent_id}"}
     )
@@ -12,7 +12,7 @@ def check_unique_name(client, tangent_id, name):
     return name not in existing_container_names
 
 
-def create_container(
+def create_tangent(
     distribution,
     tangent_id,
     connect=False,
@@ -27,7 +27,7 @@ def create_container(
         container_image = client.images.pull(container_image_name)
 
         if name:
-            if not check_unique_name(client, tangent_id, name):
+            if not tangent_name_is_unique(client, tangent_id, name):
                 print(f"Error: Container name '{name}' is not unique.")
                 return None
         else:
@@ -60,7 +60,7 @@ def create_container(
 
         container.start()
         if connect:
-            connect_container(container_name=name, tangent_id=tangent_id, shell=shell)
+            connect_tangent(container_name=name, tangent_id=tangent_id, shell=shell)
 
         return container, volume_path  # Return the container and volume path
     except docker.errors.APIError as e:
@@ -68,7 +68,7 @@ def create_container(
         return None, None
 
 
-def connect_container(container_name, tangent_id, shell="/bin/bash"):
+def connect_tangent(container_name, tangent_id, shell="/bin/bash"):
     try:
         client = docker.from_env()
         container = client.containers.get(container_name)

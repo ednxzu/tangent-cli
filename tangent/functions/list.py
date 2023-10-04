@@ -3,7 +3,7 @@ from tabulate import tabulate
 from termcolor import colored
 
 
-def list_containers_by_uuid(tangent_id, running=False, stopped=False):
+def list_tangent(tangent_id, running=False, stopped=False):
     try:
         client = docker.from_env()
         filters = {"label": f"tangent_id={tangent_id}"}
