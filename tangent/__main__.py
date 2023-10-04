@@ -1,12 +1,15 @@
-from . import utils
-from .functions.create import create_tangent, start_tangent, connect_tangent
-from .functions.list import list_tangent
-from .functions.destroy import destroy_tangent, stop_tangent
-from .parser import create_parser
+from tangent import utils
+from tangent.functions.create import create_tangent, start_tangent, connect_tangent
+from tangent.functions.list import list_tangent
+from tangent.functions.destroy import destroy_tangent, stop_tangent
+from tangent.parser import create_parser
 import docker
 
 
-def main(args):
+def main():
+    parser = create_parser()
+    args = parser.parse_args()
+
     config = utils.load_config()
     client = docker.from_env()
 
@@ -59,6 +62,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = create_parser()
-    args = parser.parse_args()
-    main(args)
+    main()
