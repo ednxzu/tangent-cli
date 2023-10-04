@@ -2,7 +2,7 @@ import docker
 import dockerpty
 import os
 from names_generator import generate_name
-from tangent.functions.list import list_tangent
+from .list import list_tangent
 
 
 def tangent_name_is_unique(client, tangent_id, name):
