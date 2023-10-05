@@ -25,6 +25,9 @@ def list_tangent(client, config=None, name=None, running=False, stopped=False):
             container_info = {
                 "Name": container.name,
                 "Status": container.status,
+                "IP Address": container.attrs["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]
+                    if "bridge" in container.attrs["NetworkSettings"]["Networks"]
+                    else "N/A",
                 "Created": container.attrs["Created"],
             }
             status_colored = (
