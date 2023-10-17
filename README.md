@@ -46,3 +46,15 @@ pip3 install git+https://github.com/ednxzu/tangent-cli@<branch-or-tag>
 
 > **Warning**
 > Tangent is not yet stable enough to make a full on release, so for now, you must use the main branch to install it.
+
+## 🚀 quickstart
+
+The images pulled are from [Jeff Geerling's dockerhub repository](https://ansible.jeffgeerling.com/) (see: Container Images for Ansible Testing). tangent interpolates the distro name to the full image name (`ubuntu2204` pulls `geerlingguy/docker-ubuntu2204-ansible`, etc...)
+
+To create an environment, simply run:
+
+```bash
+tangent create -d ubuntu2204 -n test -c
+```
+
+`tangent --help` is also available for more details.
